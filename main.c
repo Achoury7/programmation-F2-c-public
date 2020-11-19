@@ -1,52 +1,95 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#define VIE 10
+#define TAILLEMOTMAX 8
+#define MORT 0
 
-int main()
+
+
+/* FEATURES
+    Mettre en place un mot a deviner
+    Nombre de pdv au joueur : 10
+    Jeu lui meme: tentative au joueur de mettre une lettre
+    Condition de victoire : deviner le mot en entier, lettres par lettres
+    Condition de défaite :  pendu!
+     */
+
+//prototypes signatures
+
+static int init();
+static int viejoueur();
+static int motadev();
+
+
+/* determine le nombre de lettres trouvées*/
+int verif_mot(char *mot, char lettre, size_t TailleMotEtZonePendue, char *zonependue){
+    int lettretrouve = 0;
+    for (int i = 0; i < TailleMotEtZonePendue; i++){
+      /* si on a trouve la lettre dans le mot */
+        if(mot[i] == lettre){
+           /* on remplit notre sone de pendu*/
+            zonependue[i] = lettre;
+            /* on augement le compteur de lettre trouves*/
+            lettretrouve++;
+        }
+    }
+
+
+    return lettretrouve;
+}
+
+static int zonependueincomplete(char *zonependue, size_t TailleMotEtZonePendue)
+{
+  int incomplete = 0;
+  if (zonependue==NULL) {// Safegard en cas de chaîne vide
+    return 0;
+  }
+
+
+  for (int i =0; i < TailleMotEtZonePendue; i++) {
+      if (zonependue [i] == '-') {
+          incomplete = 1;
+      }
+  }
+  return incomplete;
+}
+
+int main()  //Initialisation du jeu
+
 {
 
-        //Jeu de l'oie
+    char motadev[]     = "BONJOUR";
+    char zonependue[]  = "-------";
 
-    /*  analyse du probleme : Il faudrait d'abord mettre les cas
-    particulier en initialisation puis, programmer le reste.
-    programmer aussi les cas particuliers  */
+    char caracfourni = '\0';
 
+    int nombredevies = 10;
+    int const nombredeviesmax = 10;
 
-
-void jeu_de_loie()
-    int pion = 1 ;
-    int n_de [6] = {1,2,3,4,5,6};
-    int d1 , d2 , d3 = 0;
-    int i = 1;
-    int case_arrive = 66;
-    int case_tetemort = 58;
-
-    printf("Veuillez lancer le Dé (Donnez deux valeurs)")
-    scanf("%d" & d1 + d2);
-
-    d1 + d2 == d3;
-    d3 == pion;
-
-    if pion = case_arrive{
-        printf("Le jeu est terminé %d\n");
-    }
-
-    if pion = case_tetemort{
-      pion = 1;
-        printf("Retournez a la case départ %d\n");
-
+    size_t TailleMotEtZonePendue = strlen(motadev);
+    if(TailleMotEtZonePendue>TAILLEMOTMAX){
+        TailleMotEtZonePendue=TAILLEMOTMAX;
     }
 
 
-    if pion = case_tetemort{
-    printf("Retournez a la case départ %d\n");
+    while (nombredevies > 0 && zonependueincomplete (zonependue, TailleMotEtZonePendue)){
+        printf("Donnez moi une lettre majuscule :\n ");
+        scanf ("%c", &caracfourni);
+        int trouve = 0;
+
+
+            if (caracfourni >= 'A' && caracfourni <='Z') {
+                trouve = verif_mot(motadev, caracfourni, TailleMotEtZonePendue, zonependue);
+        }
+
+    if (motadev == 0) nombredevies--;
 
     }
 
-   if pion%9 = 0;{
-   printf("Votre dé est doublé %d\n");
+    printf("(%d/%d) %s\n", nombredevies, nombredeviesmax, zonependue);
+    return 0;
 }
 
-    if d1 + d2 = (1<d3<13);{
-        printf("Votre lancé de dé est érroné,reeseyez. %d\n")
-    }
-}
+
+
