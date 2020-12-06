@@ -1,178 +1,232 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define VIE 10
-#define TAILLEMOTMAX 8
-#define MORT 0
 
 
+#define B_PORTE_AVION 5
+#define B_CROISEUR 4
+#define B_CONTRE_TORPILLEUR 3
+#define B_SOUS_MARIN 3
+#define B_TORPILLEUR 2
+#define C_EAU 0
+#define C_EAU_T 1 //Bateau touché
+#define C_BAT_T 2 //Bateau "en vue"
+#define TAILLE_GRILLE 10
 
-/* FEATURES
-    Mettre en place un mot a deviner
-    Nombre de pdv au joueur : 10
-    Jeu lui meme: tentative au joueur de mettre une lettre
-    Condition de victoire : deviner le mot en entier, lettres par lettres
-    Condition de défaite :  pendu!
-     */
-
-//prototypes signatures
-void affiche_pendu(char tab [] [65], int nbvie);                                           //Ces trois types void permet d'afficher a chaque
-void affiche_vie(int nbvie, int nbviemax);                                                 //iteration, le nombre de vies restants, le nombre
-void affiche_mot_pendue (char tab [], int n_taille);                                       //de vies maximum et le mot pendu.
-
-/* ------------------------------------------------------------- */
-
-
-int verif_mot(char *mot, char lettre, size_t TailleMotEtZonePendue, char *zonependue){    //On determine le nombre de lettres trouvées
-    int lettretrouve = 0;
-    for (int i = 0; i < TailleMotEtZonePendue; i++){                                      // Si on a trouve la lettre dans le mot, alors...
-        if(mot[i] == lettre){
-
-            zonependue[i] = lettre;                                                       //on remplit notre zone de pendu et...
-
-            lettretrouve++;                                                               //...on augement le compteur de lettres trouvés , ps: == est un test.
-        }
-    }
+//Prototypes
+// Couleur de la grille
+const char line[] = "  +---+---+---+---+---+---+---+---+---+---+",
+EAU[] = "   |",
+EAU_T[] = ANSI_COLOR_BLUE " X " ANSI_COLOR_RESET "|",
+BAT[] = ANSI_COLOR_GREEN "***" ANSI_COLOR_RESET "|",
+BAT_T[] = ANSI_COLOR_RED "XXX" ANSI_COLOR_RESET "|";
 
 
-    return lettretrouve;
+typedef struct {
+                                                    // 1 porte-avion (5 cases),
+                                                      //1 croiseur (4 cases),
+                                                      //1 contre torpilleur (3 cases),
+                                                      //1 sous-marin (3 cases),
+                                                     // 1 torpilleur (2 cases),
+
+	 // Cases restantes pour les bateaux
+	int porteAvion, croiseur, contreTorpilleur, sousMarin, torpilleur, points;
+	int grille[TAILLE_GRILLE][TAILLE_GRILLE];
+	int grilleEnnemie[TAILLE_GRILLE][TAILLE_GRILLE];
+} Plateau;
+
+typedef struct {
+	int x, y;
+	char d;
+} Coordonnees;
+
+Coordonnees strToCoord(char string[], int aDirection) {
+	Coordonnees c;
+	char strX[2 + 1];
+	int i;
+
+	// Pour permettre de faire la direction du bateau
+	if (aDirection > 0) {
+		aDirection = 1;
+		c.d = string[strlen(string) - 1];
+	}
+	else {
+		aDirection = 0;
+	}
+
+	// Pour couper le charactere
+
+	c.y = string[0] - 'a';
+	for (i = 0; i < strlen(string) - (1 + aDirection); i++) {
+		strX[i] = string[i + 1];
+	}
+	for (i + 1; i < strlen(strX); i++) {
+		strX[i] = '\0';
+	}
+
+	c.x = strtol(strX, NULL, 10) - 1;    //Cette fonction, signifiant ,"string to long", permet de transformer une chaîne de caractères, en un entier type long.
+
+	return c;
 }
 
-int zonependueincomplete(char *zonependue, size_t TailleMotEtZonePendue)         //On definit la taille de la zone pendue et on la stocke dans
-{                                                                                //une adresse (Ajout pointeur pour la zone pendue)
-  int incomplete = 0;
-  if (zonependue==NULL) {                                                        // Ce code permet une sortie du programme si il y'a une erreur.  //NULL est pour la réference.
-    return 0;
-  }
+//  Initialise un plateau vierge qui retourne un Plateau initialisé
 
+Plateau initPlateau() {
+	Plateau p;
+	int i, j;
+	* contreTorpilleur = B_CONTRE_TORPILLEUR;
+	* croiseur = B_CROISEUR;
+	* porteAvion = B_PORTE_AVION;
+	* sousMarin = B_SOUS_MARIN;
+	* torpilleur = B_TORPILLEUR;
+	* points = 0;
 
-  for (int i =0; i < TailleMotEtZonePendue; i++) {
-      if (zonependue [i] == '-') {                                              //On affiche la zone pendue avec le caractere '-' (lettres non trouvées)
-          incomplete = 1;
-      }
-  }
-  return incomplete;
+	for (i = 0; i < TAILLE_GRILLE; i++) {
+		for (j = 0; j < TAILLE_GRILLE; j++) {
+			* grille[i][j] = C_EAU;
+		}
+	}
+
+	return p;
 }
 
+//Ce code affiche une grille de jeu
+void afficherGrille(int g[TAILLE_GRILLE][TAILLE_GRILLE]) {
+	int i, j;
 
 
-int main()  //Initialisation du jeu
-{
-
-int tab_verific [26];       // Ajout d'un tableau comprenant l'alphabet en entier (26 lettres)
-
-
-
-/*
-   ----|
-   |   |
-   O   |
-  /|\  |
-   |   |
-  / \  |
-==========
-*/
-                                                                                     //11 Lignes et 65 caracteres au total (pour le code)
-                                                                                     //On realise l'affichage du pendu, ligne par ligne.
-    char tab_pendu [11] [65] = {                                                     //58 caracteres totaux de pendu + 7 retours a la ligne
-"   ----|\n   |   |\n   O   |\n  /|\\  |\n   |   |\n  / \\  |\n==========\n",        //Ajout de la jambe droite            (MORT)
-"   ----|\n   |   |\n   O   |\n  /|\\  |\n   |   |\n    \\  |\n==========\n",        //Ajout de la jambe gauche            (1 vies)
-"   ----|\n   |   |\n   O   |\n  /|\\  |\n   |   |\n       |\n==========\n",         //Ajout du bras gauche                (2 vies)
-"   ----|\n   |   |\n   O   |\n   |\\  |\n   |   |\n       |\n==========\n",         //Ajout du bras droit                 (3 vies)
-"   ----|\n   |   |\n   O   |\n   |   |\n   |   |\n       |\n==========\n",          //Ajout du corps                      (4 vies)
-"   ----|\n   |   |\n   O   |\n       |\n       |\n       |\n==========\n",          //Ajout de la tete                    (5 vies)
-"   ----|\n   |   |\n       |\n       |\n       |\n       |\n==========\n",          //Ajout du poteau horizontal et corde (6 vies)
-"       |\n       |\n       |\n       |\n       |\n       |\n==========\n",          //Ajout du poteau verticale           (7 vies)
-"        \n        \n        \n        \n        \n        \n==========\n",          //Renforcement du sol                 (8 vies)
-"        \n        \n        \n        \n        \n        \n----------\n",          //Construction du sol                 (9 vies)
-"        \n        \n        \n        \n        \n        \n          \n"           //Rien n'est affiché                 (10 vies)
-};
-
-
-
-    char motadev[]     = "BONJOUR";
-    char zonependue[]  = "-------";
-    int lng = strlen(motadev);
-
-    char caracfourni = '\0';
-
-    int nombredevies = 10;
-
-    int const nombredeviesmax = 10;
-
-    size_t TailleMotEtZonePendue = strlen(motadev);                                 //Tant que le mot nest pas trouvé, on affiche le pendu
-    if(TailleMotEtZonePendue>TAILLEMOTMAX){                                         //et on le limite a la TAILLEMOMAX, c'est a dire 8. (7+1)
-        TailleMotEtZonePendue=TAILLEMOTMAX;
-    }
-
-        affiche_mot_pendue(zonependue, strlen(zonependue));
-    while (nombredevies > 0 && zonependueincomplete (zonependue, TailleMotEtZonePendue)){
-
-
-
-        printf("\nDonnez moi une lettre majuscule :\n ");
-        scanf ("%c", &caracfourni); // On remplace le "/0" par le caractere fourni par l'utilisateur
-        fflush (stdin);
-        int trouve = 0;
-
-            if (caracfourni >= 'A' && caracfourni <='Z') {  //Ecrasement du caractere precedent par le nouveau
-                trouve = verif_mot(motadev, caracfourni, TailleMotEtZonePendue, zonependue);  //On delimite l'utilisateur aux lettres majuscules seulement.
-        }
-
-
-
-    if (trouve == 0) {
-        nombredevies--;
-        printf("Vous avez perdu une vie ! \n");   //Si l'utilisateur se trompe, il perd une vie.
-
-
-
-    if (nombredevies<=0){
-    printf("Vous avez perdu la partie ! \n");     // Si l'utilisateur n'a plus de vies, il a perdu la partie.
-}
-    }else{
-
-    printf("Vous avez trouve la lettre %c\n", caracfourni);         //Sinon, une lettre est ajoutée au pendu.
-
-    }
-
-
-
-
-
-
-       affiche_pendu(tab_pendu, nombredevies);
-       affiche_mot_pendue(zonependue, TAILLEMOTMAX);
-       affiche_vie(nombredevies, nombredeviesmax);                          //Affiche_vie fait le lien entre nombredevies et nbvie (par exemple)
- }  printf("Vous avez gagne la partie ! \n");                               //Ceci s'affiche lorsque le joueur a trouvé toutes les lettres
-    return 0;
-
-
-
-
+	puts("\n  | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10|");
+	puts(line);
+	for (i = 0; i < TAILLE_GRILLE; i++) {
+		printf("%c |", i + 'A');
+		for (j = 0; j < TAILLE_GRILLE; j++) {
+			if ((int)g[i][j] == C_EAU) { // Le tir est dans l'eau
+				printf("%s", C_EAU);
+			}
+			else if (g[i][j] == C_EAU_T) { // Le tir est touché
+				printf("%s", C_EAU_T);
+			}
+			else if (
+				g[i][j] == B_PORTE_AVION ||
+				g[i][j] == B_CROISEUR ||
+				g[i][j] == B_CONTRE_TORPILLEUR ||
+				g[i][j] == B_SOUS_MARIN ||
+				g[i][j] == B_TORPILLEUR
+				) {
+				printf("%s", BAT);
+			}
+			else {
+				printf("%s", BAT_T);
+			}
+		}
+		printf("\n");
+	}
 }
 
 
 
-
-
-void affiche_mot_pendue (char tab [], int n_taille){                        //Afficher le mot pendue
-    int i;
-        for (i = 0 ; i < n_taille; i++){
-            printf("%c", tab[i]);
-
-        }
-
-}
-void affiche_vie(int nbvie, int nbviemax){
-      printf("(%d/%d) \n", nbvie, nbviemax);                               //Affichage du systeme de vie
-}
-
-void affiche_pendu(char tab[] [65], int nbvie){
-      for ( int i = 0 ; i < 65 ; i++){
-       printf("%c", tab[nbvie] [i]);                                      //Affichage d'abord, du pendu
-    }
+int CompPlateau(Plateau p) {
+	return * contreTorpilleur + * croiseur + * porteAvion + * sousMarin + * torpilleur;
 }
 
 
 
+//Ce code permet de placer un bateau dans la grille
+Plateau placerBat(Plateau p, char nom[], int taille, int val) {
+	int done, error, i;
+	Coordonnees c;
+	char pos[4 + 1], // Coordonnées
+		orientation[10 + 1],
+		reponse;
+
+	afficherGrille(* grille);
+
+	printf("Pour placer un bateau, donnez les coordonées de la case de destination, puis\n"
+		"son orientation (h/v). Les bateaux seront positionnés sur la droite de\n"
+		"la case donnée pour les placements horizontaux, et vers le base pour les \n"
+		"placements verticaux. Exemple : a10v\n\n");
+	printf("Veuillez placer le %s (%i cases)\n\n", nom, size);
+	do {
+		// Re-inititialisation des valeurs
+		error = 0;
+		done = 0;
+		strcpy(orientation, "horizontal");
+
+		// Pour demander les coordonées du bateau (vis a vis de la position)
+		printf("Position : ");
+		scanf("%s", pos);
+
+		c = strToCoord(pos, 1);
+
+
+		if (c.x < 0 || c.y < 0 || c.x > TAILLE_GRILLE || c.y > TAILLE_GRILLE) {
+			printf(" > Mauvaises coordonnées...");
+			error = 1;
+		}
+		else if (c.d == 'v') {// Vérification placement des bateaux
+			strcpy(orientation, "vertical");
+			// Sortie de carte
+			if (c.y + taille > TAILLE_GRILLE) {
+				printf(" > Vous ne pouvez pas placer votre bateau ici. Il sortirait de la carte...(y=%i)\n", c.y);
+				error = 1;
+			}
+			else {
+				// Ce code gere les chevauchements entre deux bateaux. (En coordonnée Y)
+				for (i = c.y; i < c.y + taille; i++) {
+					if (p.grille[i][c.x] != C_EAU) {
+						puts(" > Il y a déjà un bateau ici...");
+						error = 1;
+
+						break;
+					}
+				}
+			}
+		}
+		else if (c.x + taille > TAILLE_GRILLE) {
+			printf(" > Vous ne pouvez pas placer votre bateau ici. Il sortirait de la carte...(x=%i)\n", c.x);
+			error = 1;
+		}
+		else {
+			// Ce code gere les chevauchements entre deux bateaux.(En coordonnée X)
+			for (i = c.x; i < c.x + taille; i++) {
+				if (p.grille[c.y][i] != C_EAU) {
+					puts(" > Il y a déjà un bateau ici...");
+					error = 1;
+
+					break;
+				}
+			}
+		}
+
+		if (error == 0) {
+			getchar();
+			printf("Placement %s en %c:%i. Est-ce correct ? [o/N] ", orientation, c.y + 'a', c.x + 1);
+			reponse = getchar();
+			if (reponse == 'o' || reponse == 'O') {
+				done = 1;
+			}
+		}
+	} while (done == 0);
+
+
+
+
+
+//Procedure principale
+int main() {
+	 // Génération de la grille
+	Plateau plateau = initPlateau();
+
+	printf("Placement de vos bateaux\n");
+
+	// Placement des bateaux
+	plateau = placerBat(plateau, "porte avions", B_PORTE_AVION, C_PORTE_AVION);
+	plateau = placerBat(plateau, "croiseur", B_CROISEUR, C_CROISEUR);
+	plateau = placerBat(plateau, "contre-torpilleur", B_CONTRE_TORPILLEUR, C_CONTRE_TORPILLEUR);
+	plateau = placerBat(plateau, "sous-marin", B_SOUS_MARIN, C_SOUS_MARIN);
+	plateau = placerBat(plateau, "torpilleur", B_TORPILLEUR, C_TORPILLEUR);
+
+
+
+
+}
