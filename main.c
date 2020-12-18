@@ -1,150 +1,208 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define VIE 10
-#define TAILLEMOTMAX 8
-#define MORT 0
+#include <time.h>
+#define MONKCVIE 4
+#define PISTEUR1V 1
+#define PISTEUR2V 1
+#define PISTEUR3V 1
+#define PISTEUR4V 1
+#define PISTEUR5V 1
+#define PISTEUR6V 1
+#define PISTEUR7V 1
+#define PISTEUR8V 1
+#define PISTEUR9V 1
+#define PISTEUR10V 1
+#define PISTEURMORT 0
+#define MONKCMORT 0
+#define PISTEURDEPLACEMENT 4
 
-
-
-/* FEATURES
-    Mettre en place un mot a deviner
-    Nombre de pdv au joueur : 10
-    Jeu lui meme: tentative au joueur de mettre une lettre
-    Condition de victoire : deviner le mot en entier, lettres par lettres
-    Condition de défaite :  pendu!
-     */
 
 //prototypes signatures
-void affiche_pendu(char tab [] [65], int nbvie);                                           //Ces trois types void permet d'afficher a chaque
-void affiche_vie(int nbvie, int nbviemax);                                                 //iteration, le nombre de vies restants, le nombre
-void affiche_mot_pendue (char tab [], int n_taille);                                       //de vies maximum et le mot pendu.
+void affiche_jeu(char tab [14] [29], int etoile);
+void affiche_viecmonk(int nbvie, int nbviemax);
+void affiche_pisteur (char tab [10], int pisteurnum);
+void affiche_cmonk (char tab [1], int monkc);
+void affiche_casesdeppisteur (char tab [3] [3]);
+void affiche_visionpisteur (char tab [3] [3] int visionpisteur);
+void affiche_tracepasmonkc (char tab [1] [16] );
+void affiche_deplacementmonkc (char tab [1] [16]);
 
 /* ------------------------------------------------------------- */
 
 
-int verif_mot(char *mot, char lettre, size_t TailleMotEtZonePendue, char *zonependue){    //On determine le nombre de lettres trouvées
+int verif_ttlettres(char *lettres, size_t toutlesletres){
     int lettretrouve = 0;
-    for (int i = 0; i < TailleMotEtZonePendue; i++){                                      // Si on a trouve la lettre dans le mot, alors...
-        if(mot[i] == lettre){
 
-            zonependue[i] = lettre;                                                       //on remplit notre zone de pendu et...
+    if (caracfourni >= 'A' && caracfourni <='Z') {
+                trouve = verif_mot(motadev, caracfourni);
 
-            lettretrouve++;                                                               //...on augement le compteur de lettres trouvés , ps: == est un test.
-        }
+toutlesletres[i] = lettretrouve;
+
     }
 
 
-    return lettretrouve;
+    return lettrenontrouve;
+    printf("Erreur de verification de caractere");
 }
 
-int zonependueincomplete(char *zonependue, size_t TailleMotEtZonePendue)         //On definit la taille de la zone pendue et on la stocke dans
-{                                                                                //une adresse (Ajout pointeur pour la zone pendue)
-  int incomplete = 0;
-  if (zonependue==NULL) {                                                        // Ce code permet une sortie du programme si il y'a une erreur.  //NULL est pour la réference.
-    return 0;
-  }
-
-
-  for (int i =0; i < TailleMotEtZonePendue; i++) {
-      if (zonependue [i] == '-') {                                              //On affiche la zone pendue avec le caractere '-' (lettres non trouvées)
-          incomplete = 1;
-      }
-  }
-  return incomplete;
+int placementpisteur (char *pisteur , int valeurcase, char tab [2] [2], int tab_verific [26])
+{
+    printf("Placer votre pisteur numero : %s\n , 4 cases maximum !");
+    if valeurcase < 4 {
+        pisteur++
+    }else
+    printf("Vous ne pouvez plus vous deplacer !\n")
 }
 
 
+int visionpisteur (char tab [3] [3]){
+    printf("Selectionnez votre pisteur par son numero correspondant")
+    scanf("Pisteur selectionné")
+   }else{
+        ("Ce n'est pas le bon numéro, donnez un autre numéro.")
+}
 
-int main()  //Initialisation du jeu
+
+
+    printf("Vous avez choisi le pisteur numero %s\n" )
+ case 1 :
+    printf("Pisteur numero %s : Je ne vois pas le monstre mais les traces sont fraiches ! les traces du MONK C sont en %s %s %s\n", visionpisteur);
+    break;
+ case 2 :
+     printf("Je vois le monstre ! En ", monkC "!" , "Je vais tirer ! Appuyez sur ENTREE\n");
+     getchar(13);
+     printf("Le monstre pert un point de vie !\n")
+     MONKCVIE - 1 -> MONKCVIE
+    break;
+     else
+        default printf("Le tir est raté !\n");
+
+     default : ("Il n'y a rien en %s, %s, %s!\n");
+
+
+
+int main()  //
+
 {
 
-int tab_verific [26];       // Ajout d'un tableau comprenant l'alphabet en entier (26 lettres)
 
 
 
 /*
-   ----|
-   |   |
-   O   |
-  /|\  |
-   |   |
-  / \  |
-==========
+****************************
+*                          *
+*                          *
+*                          *
+*                          *
+*                          *
+*                          *
+****************************
 */
-                                                                                     //11 Lignes et 65 caracteres au total (pour le code)
-                                                                                     //On realise l'affichage du pendu, ligne par ligne.
-    char tab_pendu [11] [65] = {                                                     //58 caracteres totaux de pendu + 7 retours a la ligne
-"   ----|\n   |   |\n   O   |\n  /|\\  |\n   |   |\n  / \\  |\n==========\n",        //Ajout de la jambe droite            (MORT)
-"   ----|\n   |   |\n   O   |\n  /|\\  |\n   |   |\n    \\  |\n==========\n",        //Ajout de la jambe gauche            (1 vies)
-"   ----|\n   |   |\n   O   |\n  /|\\  |\n   |   |\n       |\n==========\n",         //Ajout du bras gauche                (2 vies)
-"   ----|\n   |   |\n   O   |\n   |\\  |\n   |   |\n       |\n==========\n",         //Ajout du bras droit                 (3 vies)
-"   ----|\n   |   |\n   O   |\n   |   |\n   |   |\n       |\n==========\n",          //Ajout du corps                      (4 vies)
-"   ----|\n   |   |\n   O   |\n       |\n       |\n       |\n==========\n",          //Ajout de la tete                    (5 vies)
-"   ----|\n   |   |\n       |\n       |\n       |\n       |\n==========\n",          //Ajout du poteau horizontal et corde (6 vies)
-"       |\n       |\n       |\n       |\n       |\n       |\n==========\n",          //Ajout du poteau verticale           (7 vies)
-"        \n        \n        \n        \n        \n        \n==========\n",          //Renforcement du sol                 (8 vies)
-"        \n        \n        \n        \n        \n        \n----------\n",          //Construction du sol                 (9 vies)
-"        \n        \n        \n        \n        \n        \n          \n"           //Rien n'est affiché                 (10 vies)
-};
 
 
+void grille(int Tgrille[14][29])
+{
 
-    char motadev[]     = "BONJOUR";
-    char zonependue[]  = "-------";
-    int lng = strlen(motadev);
+    int ligne, colonne;
 
-    char caracfourni = '\0';
+        printf("*");
+        printf("*");
 
-    int nombredevies = 10;
+        for(ligne=0 ; ligne < 14 ; ligne++ ){
+            printf("%d",ligne+1);
+            for(colonne=0 ; colonne < 29 ; colonne++ ){
+                if(Tplateau[ligne][colonne]==0){
+                    printf("*");
+                }else if(Tplateau[ligne][colonne]==1){
+                    printf("*");
+                }
 
-    int const nombredeviesmax = 10;
-
-    size_t TailleMotEtZonePendue = strlen(motadev);                                 //Tant que le mot nest pas trouvé, on affiche le pendu
-    if(TailleMotEtZonePendue>TAILLEMOTMAX){                                         //et on le limite a la TAILLEMOMAX, c'est a dire 8. (7+1)
-        TailleMotEtZonePendue=TAILLEMOTMAX;
-    }
-
-        affiche_mot_pendue(zonependue, strlen(zonependue));
-    while (nombredevies > 0 && zonependueincomplete (zonependue, TailleMotEtZonePendue)){
-
-
-
-        printf("\nDonnez moi une lettre majuscule :\n ");
-        scanf ("%c", &caracfourni); // On remplace le "/0" par le caractere fourni par l'utilisateur
-        fflush (stdin);
-        int trouve = 0;
-
-            if (caracfourni >= 'A' && caracfourni <='Z') {  //Ecrasement du caractere precedent par le nouveau
-                trouve = verif_mot(motadev, caracfourni, TailleMotEtZonePendue, zonependue);  //On delimite l'utilisateur aux lettres majuscules seulement.
+            }
+            printf("\n");
         }
 
-
-
-    if (trouve == 0) {
-        nombredevies--;
-        printf("Vous avez perdu une vie ! \n");   //Si l'utilisateur se trompe, il perd une vie.
-
-
-
-    if (nombredevies<=0){
-    printf("Vous avez perdu la partie ! \n");     // Si l'utilisateur n'a plus de vies, il a perdu la partie.
 }
-    }else{
 
-    printf("Vous avez trouve la lettre %c\n", caracfourni);         //Sinon, une lettre est ajoutée au pendu.
+int main() {
+        int Tplateau[14][29];
 
+        printf("*");
+
+        plateau(Tgrille);
     }
 
 
 
+    char monkC[]     = "M";
+    char pisteur[]  = "P";
+    char visionpisteur = [3] [3];
 
 
 
-       affiche_pendu(tab_pendu, nombredevies);
-       affiche_mot_pendue(zonependue, TAILLEMOTMAX);
-       affiche_vie(nombredevies, nombredeviesmax);                          //Affiche_vie fait le lien entre nombredevies et nbvie (par exemple)
- }  printf("Vous avez gagne la partie ! \n");                               //Ceci s'affiche lorsque le joueur a trouvé toutes les lettres
+
+/*-----------------------------------------------------------------------------------*/
+
+    if([PISTEUR1V == 0]){
+        printf("Le pisteur numéro 1 est mort !" )
+    }
+
+
+      if([PISTEUR2V == 0]){
+        printf("Le pisteur numéro 2 est mort !" )
+    }
+
+
+     if([PISTEUR3V == 0]){
+        printf("Le pisteur numéro 3 est mort !" )
+    }
+
+
+         if([PISTEUR4V == 0]){
+        printf("Le pisteur numéro 4 est mort !" )
+    }
+
+
+         if([PISTEUR5V == 0]){
+        printf("Le pisteur numéro 5 est mort !" )
+    }
+
+
+           if([PISTEUR6V == 0]){
+        printf("Le pisteur numéro 6 est mort !" )
+    }
+
+
+            if([PISTEUR7V == 0]){
+        printf("Le pisteur numéro 7 est mort !" )
+    }
+
+
+
+            if([PISTEUR8V == 0]){
+        printf("Le pisteur numéro 8 est mort !" )
+    }
+
+
+            if([PISTEUR9V == 0]){
+        printf("Le pisteur numéro 9 est mort !" )
+    }
+
+
+
+            if([PISTEUR10V == 0]){
+        printf("Le pisteur numéro 10 est mort !" )
+    }
+
+    if ([PISTEUR1V], [PISTEUR2V], PISTEUR3V], [PISTEUR4V],
+         [PISTEUR5V], [PISTEUR56V}, [PISTEUR7V], [PISTEUR8V],
+         [PISTEUR9V], [PISTEUR10V] == 0){
+        printf("Vous avez perdu la partie ! Tout vos pisteurs sont morts ! \n");   //
+    }
+
+
+    if (MONKCVIE == 0 && MONKCMORT == 0  )
+ }  printf("Vous avez gagne la partie ! Le Monk C est mort ! \n");
     return 0;
 
 
@@ -155,24 +213,38 @@ int tab_verific [26];       // Ajout d'un tableau comprenant l'alphabet en entie
 
 
 
-
-void affiche_mot_pendue (char tab [], int n_taille){                        //Afficher le mot pendue
+void affiche_jeu (char tab [14] [29], int taillejeu){
     int i;
-        for (i = 0 ; i < n_taille; i++){
-            printf("%c", tab[i]);
+        for (i = 0 ; i < taillejeu; i++){
+            printf("*", tab[i]);
 
         }
 
 }
-void affiche_vie(int nbvie, int nbviemax){
-      printf("(%d/%d) \n", nbvie, nbviemax);                               //Affichage du systeme de vie
+void affiche_viecmonk(int nbvie, int nbviemax){
+      printf("(%d/%d) \n", nbvie, nbviemax);
 }
 
-void affiche_pendu(char tab[] [65], int nbvie){
-      for ( int i = 0 ; i < 65 ; i++){
-       printf("%c", tab[nbvie] [i]);                                      //Affichage d'abord, du pendu
+void affiche_pisteur(char tab[3] [3], int deplacement){
+      for ( int i = 0 ; i < 4 ; i++){
+       printf("Tu peux encore te deplacer !\n", tab[4] [i]);
     }
 }
 
+void affiche_tracepasmonkc (char tab [1] [16] ){
+    int fraicheur = 16
+    int tour = 1
+        for tour++ {
+            fracheur - 1
+    printf("Les traces de fraicheur du MONK C s'amenuisent !\n");
+    clearprint;
+    }
+}
 
-
+void affiche_deplacementmonkc(char tab [1] [16]){
+    int deplacementmonkc
+        for tab_grille < [14] [29}{
+            deplacementmonkc++*
+        printf("Le monkc se déplace en " ,tab_grille && deplacementmonkc);
+        }
+}

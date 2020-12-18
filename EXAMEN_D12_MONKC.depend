@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1607355276 source:d:\ludus\codeblocks\projects\examen_d12_monkc\main.c
+	<stdio.h>
+	<stdlib.h>
+
